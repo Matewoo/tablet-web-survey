@@ -3,6 +3,9 @@ const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
 const bodyParser = require('body-parser');
+const fs = require('fs');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const csv = require('csvtojson');
 
 // Create an Express app
 const app = express();
@@ -13,125 +16,213 @@ const wss = new WebSocket.Server({ server });
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 
+// CSV Writer setup
+const csvWriter = createCsvWriter({
+  path: 'survey_results.csv',
+  header: [
+    {id: 'date', title: 'DATE'},
+    {id: 'category', title: 'CATEGORY'},
+    {id: 'rating', title: 'RATING'}
+  ],
+  append: true
+});
+
 // Serve the client-side HTML
 app.get('/', (req, res) => {
-    res.send(`
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Handle form submission
+app.post('/submit', (req, res) => {
+  const date = new Date().toISOString().split('T')[0]; // Aktuelles Datum
+  const results = req.body;
+
+  // Ergebnisse in die CSV-Datei einfügen
+  const records = Object.keys(results).map(category => ({
+    date,
+    category,
+    rating: results[category]
+  }));
+
+  csvWriter.writeRecords(records)
+    .then(() => {
+      console.log('Received feedback:', results);
+      res.json({ status: 'success' });
+    })
+    .catch(error => {
+      console.error('Error writing to CSV:', error);
+      res.status(500).json({ status: 'error', message: 'Error writing to CSV' });
+    });
+});
+
+// Serve the survey results page
+app.get('/survey', (req, res) => {
+  res.send(`
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Emoji Feedback</title>
+      <title>Survey Results</title>
       <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;700&display=swap" rel="stylesheet">
       <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
-      <h1>Bitte bewerten Sie Ihren heutigen Aufenthalt</h1>
-      <div class="content">
-        <div>
-          <div class="rating-container" style="justify-content:left;">
-            <h3>Fleischgericht</h3>
-          </div>
-          <div class="rating-container" style="justify-content:left;">
-            <h3>Vegetarisch</h3>
-          </div>
-          <div class="rating-container" style="justify-content:left;">
-            <h3>Tagesgericht</h3>
-          </div>
-          <div class="rating-container" style="justify-content:left; margin-top: 20px; margin-bottom: 20px;">
-            <h3>Service</h3>
-          </div>
-        </div>
-        <div>
-          <div class="rating-container">
-            <div class="emojies">
-              <button class="emoji" data-category="Fleischgericht" id="veryBad">😢</button>
-              <button class="emoji" data-category="Fleischgericht" id="bad">😐</button>
-              <button class="emoji" data-category="Fleischgericht" id="neutral">🙂</button>
-              <button class="emoji" data-category="Fleischgericht" id="good">😋</button>
-              <button class="emoji" data-category="Fleischgericht" id="veryGood">🤩</button>
-            </div>
-          </div>
-          <div class="rating-container">
-            <div class="emojies">
-              <button class="emoji" data-category="Vegetarisch" id="veryBad">😢</button>
-              <button class="emoji" data-category="Vegetarisch" id="bad">😐</button>
-              <button class="emoji" data-category="Vegetarisch" id="neutral">🙂</button>
-              <button class="emoji" data-category="Vegetarisch" id="good">😋</button>
-              <button class="emoji" data-category="Vegetarisch" id="veryGood">🤩</button>
-            </div>
-          </div>
-          <div class="rating-container">
-            <div class="emojies">
-              <button class="emoji" data-category="Tagesgericht" id="veryBad">😢</button>
-              <button class="emoji" data-category="Tagesgericht" id="bad">😐</button>
-              <button class="emoji" data-category="Tagesgericht" id="neutral">🙂</button>
-              <button class="emoji" data-category="Tagesgericht" id="good">😋</button>
-              <button class="emoji" data-category="Tagesgericht" id="veryGood">🤩</button>
-            </div>
-          </div>
-          <div class="rating-container" style="margin-top: 20px; margin-bottom: 20px;">
-            <div class="emojies">
-              <button class="emoji" data-category="Service" id="bad">😟</button>
-              <button class="emoji" data-category="Service" id="neutral">😐</button>
-              <button class="emoji" data-category="Service" id="good">🙂</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <button id="submit">Abschicken</button>
-      <div id="thank-you-message" style="display: none; margin-top: 20px; font-size: 2rem;">Vielen Dank für Ihr Feedback!</div>
-
+      <h1>Survey Results</h1>
+      <div id="results"></div>
       <script>
-        document.querySelectorAll('.emoji').forEach(button => {
-          button.addEventListener('click', () => {
-            const category = button.getAttribute('data-category');
-            if (category === 'Fleischgericht' || category === 'Vegetarisch' || category === 'Tagesgericht') {
-              document.querySelectorAll('.emoji[data-category="Fleischgericht"], .emoji[data-category="Vegetarisch"], .emoji[data-category="Tagesgericht"]').forEach(btn => btn.classList.remove('selected'));
-            } else {
-              document.querySelectorAll(\`.emoji[data-category="\${category}"]\`).forEach(btn => btn.classList.remove('selected'));
-            }
-            button.classList.add('selected');
-          });
-        });
-
-        document.getElementById('submit').addEventListener('click', () => {
-          const results = {};
-          document.querySelectorAll('.emoji.selected').forEach(button => {
-            const category = button.getAttribute('data-category');
-            results[category] = button.id;
-          });
-
-          fetch('/submit', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(results)
-          })
+        fetch('/results')
           .then(response => response.json())
           .then(data => {
-            console.log('Success:', data);
-            document.getElementById('thank-you-message').style.display = 'block';
-            setTimeout(() => {
-              document.getElementById('thank-you-message').style.display = 'none';
-              document.querySelectorAll('.emoji').forEach(button => button.classList.remove('selected'));
-            }, 1000);
+            const resultsDiv = document.getElementById('results');
+            data.forEach(row => {
+              const div = document.createElement('div');
+              div.textContent = \`Date: \${row.date}, Category: \${row.category}, Rating: \${row.rating}\`;
+              resultsDiv.appendChild(div);
+            });
           })
-          .catch((error) => {
-            console.error('Error:', error);
+          .catch(error => {
+            console.error('Error fetching results:', error);
           });
-        });
       </script>
     </body>
     </html>
-    `);
+  `);
 });
 
-// Handle form submission
-app.post('/submit', (req, res) => {
-  console.log('Received feedback:', req.body);
-  res.json({ status: 'success' });
+// Serve the survey results data
+app.get('/results', (req, res) => {
+  const csvFilePath = 'survey_results.csv';
+  csv({
+    noheader: true,
+    headers: ['date', 'category', 'rating']
+  })
+    .fromFile(csvFilePath)
+    .then((jsonObj) => {
+      res.json(jsonObj);
+    })
+    .catch((error) => {
+      console.error('Error reading CSV:', error);
+      res.status(500).json({ status: 'error', message: 'Error reading CSV' });
+    });
+});
+
+// Serve the weekly summary page
+app.get('/summary', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Weekly Summary</title>
+      <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+      <h1>Weekly Summary</h1>
+      <table id="summary-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Thursday</th>
+            <th>Friday</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      <script>
+        fetch('/weekly-summary')
+          .then(response => response.json())
+          .then(data => {
+            const tableBody = document.getElementById('summary-table').getElementsByTagName('tbody')[0];
+            const categories = ['Fleischgericht', 'Vegetarisch', 'Tagesgericht', 'Service'];
+            categories.forEach(category => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = \`
+                <td>\${category}</td>
+                <td>\${data.Monday[category]}</td>
+                <td>\${data.Tuesday[category]}</td>
+                <td>\${data.Wednesday[category]}</td>
+                <td>\${data.Thursday[category]}</td>
+                <td>\${data.Friday[category]}</td>
+              \`;
+              tableBody.appendChild(tr);
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching summary:', error);
+          });
+      </script>
+    </body>
+    </html>
+  `);
+});
+
+// Serve the weekly summary data
+app.get('/weekly-summary', (req, res) => {
+  const csvFilePath = 'survey_results.csv';
+  csv({
+    noheader: true,
+    headers: ['date', 'category', 'rating']
+  })
+    .fromFile(csvFilePath)
+    .then((jsonObj) => {
+      const summary = {
+        Monday: { Fleischgericht: { total: 0, count: 0 }, Vegetarisch: { total: 0, count: 0 }, Tagesgericht: { total: 0, count: 0 }, Service: { total: 0, count: 0 } },
+        Tuesday: { Fleischgericht: { total: 0, count: 0 }, Vegetarisch: { total: 0, count: 0 }, Tagesgericht: { total: 0, count: 0 }, Service: { total: 0, count: 0 } },
+        Wednesday: { Fleischgericht: { total: 0, count: 0 }, Vegetarisch: { total: 0, count: 0 }, Tagesgericht: { total: 0, count: 0 }, Service: { total: 0, count: 0 } },
+        Thursday: { Fleischgericht: { total: 0, count: 0 }, Vegetarisch: { total: 0, count: 0 }, Tagesgericht: { total: 0, count: 0 }, Service: { total: 0, count: 0 } },
+        Friday: { Fleischgericht: { total: 0, count: 0 }, Vegetarisch: { total: 0, count: 0 }, Tagesgericht: { total: 0, count: 0 }, Service: { total: 0, count: 0 } }
+      };
+
+      const ratingValues = {
+        veryBad: 1,
+        bad: 2,
+        neutral: 3,
+        good: 4,
+        veryGood: 5
+      };
+
+      const serviceRatingValues = {
+        bad: 1,
+        neutral: 2,
+        good: 3
+      };
+
+      jsonObj.forEach(row => {
+        const date = new Date(row.date);
+        const day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+        if (summary[day]) {
+          if (row.category === 'Service') {
+            summary[day][row.category].total += serviceRatingValues[row.rating];
+          } else {
+            summary[day][row.category].total += ratingValues[row.rating];
+          }
+          summary[day][row.category].count += 1;
+        }
+      });
+
+      Object.keys(summary).forEach(day => {
+        Object.keys(summary[day]).forEach(category => {
+          if (summary[day][category].count > 0) {
+            summary[day][category] = (summary[day][category].total / summary[day][category].count).toFixed(2);
+          } else {
+            summary[day][category] = 'N/A';
+          }
+        });
+      });
+
+      res.json(summary);
+    })
+    .catch((error) => {
+      console.error('Error reading CSV:', error);
+      res.status(500).json({ status: 'error', message: 'Error reading CSV' });
+    });
 });
 
 server.listen(3000, () => {
