@@ -86,7 +86,11 @@ app.get('/', (req, res) => {
         document.querySelectorAll('.emoji').forEach(button => {
           button.addEventListener('click', () => {
             const category = button.getAttribute('data-category');
-            document.querySelectorAll(\`.emoji[data-category="\${category}"]\`).forEach(btn => btn.classList.remove('selected'));
+            if (category === 'Fleischgericht' || category === 'Vegetarisch' || category === 'Tagesgericht') {
+              document.querySelectorAll('.emoji[data-category="Fleischgericht"], .emoji[data-category="Vegetarisch"], .emoji[data-category="Tagesgericht"]').forEach(btn => btn.classList.remove('selected'));
+            } else {
+              document.querySelectorAll(\`.emoji[data-category="\${category}"]\`).forEach(btn => btn.classList.remove('selected'));
+            }
             button.classList.add('selected');
           });
         });
