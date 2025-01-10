@@ -8,7 +8,6 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
     text-align: center;
     overflow: hidden; /* Verhindert Scrollen */
   }
@@ -16,7 +15,7 @@ body {
   h1 {
     font-size: 3rem;
     margin-bottom: 70px;
-    margin-top: 3rem !important;
+    padding-top: 3rem;
   }
   
   .content {
