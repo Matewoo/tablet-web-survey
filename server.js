@@ -20,9 +20,9 @@ app.use(bodyParser.json());
 const csvWriter = createCsvWriter({
   path: 'survey_results.csv',
   header: [
-    {id: 'date', title: 'DATE'},
-    {id: 'category', title: 'CATEGORY'},
-    {id: 'rating', title: 'RATING'}
+    { id: 'date', title: 'DATE' },
+    { id: 'category', title: 'CATEGORY' },
+    { id: 'rating', title: 'RATING' }
   ],
   append: true
 });
@@ -44,16 +44,19 @@ app.post('/submit', (req, res) => {
     rating: results[category]
   }));
 
-  csvWriter.writeRecords(records)
-    .then(() => {
-      console.log('Received feedback:', results);
-      res.json({ status: 'success' });
-    })
-    .catch(error => {
-      console.error('Error writing to CSV:', error);
-      res.status(500).json({ status: 'error', message: 'Error writing to CSV' });
-    });
-});
+  if (records.length > 0) {
+    csvWriter.writeRecords(records)
+      .then(() => {
+        console.log('Received feedback:', results);
+        res.json({ status: 'success' });
+      })
+      .catch(error => {
+        console.error('Error writing to CSV:', error);
+        res.status(500).json({ status: 'error', message: 'Error writing to CSV' });
+      });
+    }
+  });
+  
 
 // Serve the survey results page
 app.get('/survey', (req, res) => {
