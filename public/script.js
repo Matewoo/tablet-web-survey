@@ -1,22 +1,23 @@
 document.querySelectorAll('.emoji').forEach(button => {
-    button.addEventListener('click', () => {
-      const category = button.getAttribute('data-category');
-      if (category === 'Fleischgericht' || category === 'Vegetarisch' || category === 'Tagesgericht') {
-        document.querySelectorAll('.emoji[data-category="Fleischgericht"], .emoji[data-category="Vegetarisch"], .emoji[data-category="Tagesgericht"]').forEach(btn => btn.classList.remove('selected'));
-      } else {
-        document.querySelectorAll(`.emoji[data-category="${category}"]`).forEach(btn => btn.classList.remove('selected'));
-      }
-      button.classList.add('selected');
-    });
+  button.addEventListener('click', () => {
+    const category = button.getAttribute('data-category');
+    if (category === 'Fleischgericht' || category === 'Vegetarisch' || category === 'Tagesgericht') {
+      document.querySelectorAll('.emoji[data-category="Fleischgericht"], .emoji[data-category="Vegetarisch"], .emoji[data-category="Tagesgericht"]').forEach(btn => btn.classList.remove('selected'));
+    } else {
+      document.querySelectorAll(`.emoji[data-category="${category}"]`).forEach(btn => btn.classList.remove('selected'));
+    }
+    button.classList.add('selected');
   });
-  
-  document.getElementById('submit').addEventListener('click', () => {
-    const results = {};
-    document.querySelectorAll('.emoji.selected').forEach(button => {
-      const category = button.getAttribute('data-category');
-      results[category] = button.id;
-    });
-  
+});
+
+document.getElementById('submit').addEventListener('click', () => {
+  const results = {};
+  document.querySelectorAll('.emoji.selected').forEach(button => {
+    const category = button.getAttribute('data-category');
+    results[category] = button.id;
+  });
+
+  if (Object.keys(results).length > 0) {
     fetch('/submit', {
       method: 'POST',
       headers: {
@@ -36,4 +37,11 @@ document.querySelectorAll('.emoji').forEach(button => {
     .catch((error) => {
       console.error('Error:', error);
     });
-  });
+  }
+
+  const submitButton = document.getElementById('submit');
+  submitButton.disabled = true;
+  setTimeout(() => {
+    submitButton.disabled = false;
+  }, 1000);
+});
