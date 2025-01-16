@@ -10,12 +10,20 @@ body {
     justify-content: center;
     text-align: center;
     overflow: hidden; /* Verhindert Scrollen */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
   
   h1 {
     font-size: 3rem;
     margin-bottom: 70px;
     padding-top: 3rem;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
   
   .content {
