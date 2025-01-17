@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
 
 // Handle form submission
 app.post('/submit', (req, res) => {
-  const date = new Date().toISOString().split('T')[0]; // Aktuelles Datum
+  const date = new Date().toISOString().replace('T', ' ').split('.')[0]; // Aktuelles Datum und Uhrzeit
   const results = req.body;
 
   // Ergebnisse in die CSV-Datei einfügen
@@ -54,8 +54,8 @@ app.post('/submit', (req, res) => {
         console.error('Error writing to CSV:', error);
         res.status(500).json({ status: 'error', message: 'Error writing to CSV' });
       });
-    }
-  });
+  }
+});
   
 
 // Serve the survey results page
@@ -123,7 +123,11 @@ app.get('/summary', (req, res) => {
       <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
-      <h1>Weekly Summary</h1>
+      <h1 id="week-title"></h1>
+      <div>
+        <button id="prev-week">&lt;</button>
+        <button id="next-week">&gt;</button>
+      </div>
       <table id="summary-table">
         <thead>
           <tr>
@@ -139,27 +143,56 @@ app.get('/summary', (req, res) => {
         </tbody>
       </table>
       <script>
-        fetch('/weekly-summary')
-          .then(response => response.json())
-          .then(data => {
-            const tableBody = document.getElementById('summary-table').getElementsByTagName('tbody')[0];
-            const categories = ['Fleischgericht', 'Vegetarisch', 'Tagesgericht', 'Service'];
-            categories.forEach(category => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = \`
-                <td>\${category}</td>
-                <td>\${data.Monday[category]}</td>
-                <td>\${data.Tuesday[category]}</td>
-                <td>\${data.Wednesday[category]}</td>
-                <td>\${data.Thursday[category]}</td>
-                <td>\${data.Friday[category]}</td>
-              \`;
-              tableBody.appendChild(tr);
+        let currentWeek = new Date();
+        currentWeek.setDate(currentWeek.getDate() - currentWeek.getDay() + 1); // Set to Monday of the current week
+
+        function updateWeekTitle() {
+          const startOfWeek = new Date(currentWeek);
+          const endOfWeek = new Date(currentWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 4); // Friday of the current week
+          const weekNumber = Math.ceil(((startOfWeek - new Date(startOfWeek.getFullYear(), 0, 1)) / 86400000 + startOfWeek.getDay() + 1) / 7);
+          document.getElementById('week-title').textContent = \`KW\${weekNumber} \${startOfWeek.toLocaleDateString()} - \${endOfWeek.toLocaleDateString()}\`;
+        }
+
+        function fetchSummary() {
+          fetch(\`/weekly-summary?week=\${currentWeek.toISOString()}\`)
+            .then(response => response.json())
+            .then(data => {
+              const tableBody = document.getElementById('summary-table').getElementsByTagName('tbody')[0];
+              tableBody.innerHTML = '';
+              const categories = ['Fleischgericht', 'Vegetarisch', 'Tagesgericht', 'Service'];
+              categories.forEach(category => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = \`
+                  <td>\${category}</td>
+                  <td>\${data.Monday[category]}</td>
+                  <td>\${data.Tuesday[category]}</td>
+                  <td>\${data.Wednesday[category]}</td>
+                  <td>\${data.Thursday[category]}</td>
+                  <td>\${data.Friday[category]}</td>
+                \`;
+                tableBody.appendChild(tr);
+              });
+            })
+            .catch(error => {
+              console.error('Error fetching summary:', error);
             });
-          })
-          .catch(error => {
-            console.error('Error fetching summary:', error);
-          });
+        }
+
+        document.getElementById('prev-week').addEventListener('click', () => {
+          currentWeek.setDate(currentWeek.getDate() - 7);
+          updateWeekTitle();
+          fetchSummary();
+        });
+
+        document.getElementById('next-week').addEventListener('click', () => {
+          currentWeek.setDate(currentWeek.getDate() + 7);
+          updateWeekTitle();
+          fetchSummary();
+        });
+
+        updateWeekTitle();
+        fetchSummary();
       </script>
     </body>
     </html>
@@ -168,6 +201,10 @@ app.get('/summary', (req, res) => {
 
 // Serve the weekly summary data
 app.get('/weekly-summary', (req, res) => {
+  const weekStart = new Date(req.query.week);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 4); // Friday of the selected week
+
   const csvFilePath = 'survey_results.csv';
   csv({
     noheader: true,
@@ -176,11 +213,11 @@ app.get('/weekly-summary', (req, res) => {
     .fromFile(csvFilePath)
     .then((jsonObj) => {
       const summary = {
-        Monday: { Fleischgericht: { total: 0, count: 0 }, Vegetarisch: { total: 0, count: 0 }, Tagesgericht: { total: 0, count: 0 }, Service: { total: 0, count: 0 } },
-        Tuesday: { Fleischgericht: { total: 0, count: 0 }, Vegetarisch: { total: 0, count: 0 }, Tagesgericht: { total: 0, count: 0 }, Service: { total: 0, count: 0 } },
-        Wednesday: { Fleischgericht: { total: 0, count: 0 }, Vegetarisch: { total: 0, count: 0 }, Tagesgericht: { total: 0, count: 0 }, Service: { total: 0, count: 0 } },
-        Thursday: { Fleischgericht: { total: 0, count: 0 }, Vegetarisch: { total: 0, count: 0 }, Tagesgericht: { total: 0, count: 0 }, Service: { total: 0, count: 0 } },
-        Friday: { Fleischgericht: { total: 0, count: 0 }, Vegetarisch: { total: 0, count: 0 }, Tagesgericht: { total: 0, count: 0 }, Service: { total: 0, count: 0 } }
+        Monday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
+        Tuesday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
+        Wednesday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
+        Thursday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
+        Friday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] }
       };
 
       const ratingValues = {
@@ -199,28 +236,30 @@ app.get('/weekly-summary', (req, res) => {
 
       jsonObj.forEach(row => {
         const date = new Date(row.date);
-        const day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
-        if (summary[day]) {
-          if (row.category === 'Service') {
-            summary[day][row.category].total += serviceRatingValues[row.rating];
-          } else {
-            summary[day][row.category].total += ratingValues[row.rating];
+        if (date >= weekStart && date <= weekEnd) {
+          const day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+          if (summary[day]) {
+            if (row.category === 'Service') {
+              summary[day][row.category].push(serviceRatingValues[row.rating]);
+            } else {
+              summary[day][row.category].push(ratingValues[row.rating]);
+            }
           }
-          summary[day][row.category].count += 1;
         }
       });
 
+      // Calculate average ratings
+      const averageSummary = {};
       Object.keys(summary).forEach(day => {
+        averageSummary[day] = {};
         Object.keys(summary[day]).forEach(category => {
-          if (summary[day][category].count > 0) {
-            summary[day][category] = (summary[day][category].total / summary[day][category].count).toFixed(2);
-          } else {
-            summary[day][category] = 'N/A';
-          }
+          const ratings = summary[day][category];
+          const average = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2) : 'N/A';
+          averageSummary[day][category] = average;
         });
       });
 
-      res.json(summary);
+      res.json(averageSummary);
     })
     .catch((error) => {
       console.error('Error reading CSV:', error);
