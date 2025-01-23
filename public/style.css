@@ -34,6 +34,17 @@ body {
     margin-left: 12rem;
     margin-right: 12rem;
   }
+
+  .footer {
+    display: flex;
+    grid-template-columns:auto 3fr;
+    gap: 250px;
+    align-items: flex-start;
+    margin-top:30px;
+    margin-left: 12rem;
+    margin-right: 12rem;
+    margin-bottom: -70px;
+  }
   
   .rating-container {
     display: flex;
@@ -74,7 +85,7 @@ body {
   
   #thank-you-message {
     display: none;
-    margin-top: 100px;
+    margin-top: 0px;
     font-size: 2rem;
     color: lime;
   }
