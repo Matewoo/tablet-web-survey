@@ -131,12 +131,12 @@ app.get('/summary', (req, res) => {
       <table id="summary-table">
         <thead>
           <tr>
-            <th>Category</th>
-            <th>Monday</th>
-            <th>Tuesday</th>
-            <th>Wednesday</th>
-            <th>Thursday</th>
-            <th>Friday</th>
+            <th>Gericht</th>
+            <th style="width: 18%;">Montag</th>
+            <th style="width: 18%;">Dienstg</th>
+            <th style="width: 18%;">Mittwoch</th>
+            <th style="width: 18%;">Donnerstag</th>
+            <th style="width: 18%;">Freitag</th>
           </tr>
         </thead>
         <tbody>
@@ -165,11 +165,11 @@ app.get('/summary', (req, res) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = \`
                   <td>\${category}</td>
-                  <td>\${data.Monday[category].average} (\${data.Monday[category].count})</td>
-                  <td>\${data.Tuesday[category].average} (\${data.Tuesday[category].count})</td>
-                  <td>\${data.Wednesday[category].average} (\${data.Wednesday[category].count})</td>
-                  <td>\${data.Thursday[category].average} (\${data.Thursday[category].count})</td>
-                  <td>\${data.Friday[category].average} (\${data.Friday[category].count})</td>
+                  <td>\${data.Monday[category].average} ⭐    (\${data.Monday[category].count} P)</td>
+                  <td>\${data.Tuesday[category].average} ⭐    (\${data.Tuesday[category].count} P)</td>
+                  <td>\${data.Wednesday[category].average} ⭐    (\${data.Wednesday[category].count} P)</td>
+                  <td>\${data.Thursday[category].average} ⭐    (\${data.Thursday[category].count} P)</td>
+                  <td>\${data.Friday[category].average} ⭐    (\${data.Friday[category].count} P)</td>
                 \`;
                 tableBody.appendChild(tr);
               });
