@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
 
 // Handle form submission
 app.post('/submit', (req, res) => {
-  const date = new Date().toISOString().replace('T', ' ').split('.')[0]; // Aktuelles Datum und Uhrzeit
+  let date = new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' }).replace('"', '').replace(',', '');
   const results = req.body;
 
   // Ergebnisse in die CSV-Datei einfügen
