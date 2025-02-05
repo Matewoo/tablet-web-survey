@@ -51,7 +51,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 130px; /* Feste Höhe für die Zeilen */
+    height: 150px; /* Feste Höhe für die Zeilen */
   }
   
   .rating-container h3 {
@@ -64,7 +64,7 @@ body {
   }
   
   button {
-    font-size: 5rem;
+    font-size: 6rem;
     border: none;
     border-radius: 10px;
     background-color: #f0f0f0;
