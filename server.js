@@ -17,8 +17,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 
 // CSV Writer setup
+const csvFilePath = path.join(__dirname, '../tablet-web-survey-data/data.csv');
+const csvDir = path.dirname(csvFilePath);
+
+// Ensure the directory exists
+if (!fs.existsSync(csvDir)) {
+  fs.mkdirSync(csvDir, { recursive: true });
+}
+
+// Ensure the file exists
+if (!fs.existsSync(csvFilePath)) {
+  fs.writeFileSync(csvFilePath, 'DATE,CATEGORY,RATING\n');
+}
 const csvWriter = createCsvWriter({
-  path: 'survey_results.csv',
+  path: csvFilePath,
   header: [
     { id: 'date', title: 'DATE' },
     { id: 'category', title: 'CATEGORY' },
@@ -95,7 +107,7 @@ app.get('/survey', (req, res) => {
 
 // Serve the survey results data
 app.get('/results', (req, res) => {
-  const csvFilePath = 'survey_results.csv';
+  const csvFilePath = path.join(__dirname, '../tablet-web-survey-data/data.csv');
   csv({
     noheader: true,
     headers: ['date', 'category', 'rating']
@@ -207,16 +219,16 @@ app.get('/weekly-summary', (req, res) => {
   }
 
   const [year, month, day] = week.split('-').map(Number);
-  const weekStart = new Date(year, month - 1, day);
-  
+  const weekStart = new Date(Date.UTC(year, month - 1, day));
   if (isNaN(weekStart.getTime())) {
     return res.status(400).json({ status: 'error', message: 'Invalid date format' });
   }
   
   const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 4); // Friday of the selected week
+  weekEnd.setUTCDate(weekStart.getUTCDate() + 4); // Friday of the selected week
+  weekEnd.setUTCHours(23, 59, 59, 999); // End of Friday
 
-  const csvFilePath = 'survey_results.csv';
+  const csvFilePath = path.join(__dirname, '../tablet-web-survey-data/data.csv');
   csv({
     noheader: true,
     headers: ['date', 'category', 'rating']
@@ -239,14 +251,14 @@ app.get('/weekly-summary', (req, res) => {
         veryGood: 5
       };
 
-      jsonObj.forEach(row => {
+      jsonObj.slice(1).forEach(row => {
         const [datePart, timePart] = row.date.split(' ');
         const [day, month, year] = datePart.split('.').map(Number);
         const [hours, minutes, seconds] = timePart.split(':').map(Number);
-        const date = new Date(year, month - 1, day, hours, minutes, seconds);
+        const date = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
 
         if (date >= weekStart && date <= weekEnd) {
-          const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+          const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getUTCDay()];
           if (summary[dayName]) {
             summary[dayName][row.category].push(ratingValues[row.rating]);
           }
