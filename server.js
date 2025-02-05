@@ -70,7 +70,7 @@ app.get('/survey', (req, res) => {
       <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;700&display=swap" rel="stylesheet">
       <link rel="stylesheet" type="text/css" href="style.css">
     </head>
-    <body>
+    <body style="overflow-y: scroll;">
       <h1>Survey Results</h1>
       <div id="results"></div>
       <script>
@@ -155,21 +155,21 @@ app.get('/summary', (req, res) => {
         }
 
         function fetchSummary() {
-          fetch(\`/weekly-summary?week=\${currentWeek.toISOString()}\`)
+          fetch(\`/weekly-summary?week=\${currentWeek.toISOString().split('T')[0]}\`)
             .then(response => response.json())
             .then(data => {
               const tableBody = document.getElementById('summary-table').getElementsByTagName('tbody')[0];
               tableBody.innerHTML = '';
-              const categories = ['Fleischgericht', 'Vegetarisch', 'Tagesgericht', 'Service'];
+              const categories = ['Fleischgericht', 'Vegetarisch', 'Tagesgericht', 'Tagessalat'];
               categories.forEach(category => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = \`
                   <td>\${category}</td>
-                  <td>\${data.Monday[category]}</td>
-                  <td>\${data.Tuesday[category]}</td>
-                  <td>\${data.Wednesday[category]}</td>
-                  <td>\${data.Thursday[category]}</td>
-                  <td>\${data.Friday[category]}</td>
+                  <td>\${data.Monday[category].average} (\${data.Monday[category].count})</td>
+                  <td>\${data.Tuesday[category].average} (\${data.Tuesday[category].count})</td>
+                  <td>\${data.Wednesday[category].average} (\${data.Wednesday[category].count})</td>
+                  <td>\${data.Thursday[category].average} (\${data.Thursday[category].count})</td>
+                  <td>\${data.Friday[category].average} (\${data.Friday[category].count})</td>
                 \`;
                 tableBody.appendChild(tr);
               });
@@ -201,7 +201,18 @@ app.get('/summary', (req, res) => {
 
 // Serve the weekly summary data
 app.get('/weekly-summary', (req, res) => {
-  const weekStart = new Date(req.query.week);
+  const week = req.query.week;
+  if (!week) {
+    return res.status(400).json({ status: 'error', message: 'Week query parameter is required! Example: domain.com/weekly-summary?week=2025-02-03' });
+  }
+
+  const [year, month, day] = week.split('-').map(Number);
+  const weekStart = new Date(year, month - 1, day);
+  
+  if (isNaN(weekStart.getTime())) {
+    return res.status(400).json({ status: 'error', message: 'Invalid date format' });
+  }
+  
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 4); // Friday of the selected week
 
@@ -213,11 +224,11 @@ app.get('/weekly-summary', (req, res) => {
     .fromFile(csvFilePath)
     .then((jsonObj) => {
       const summary = {
-        Monday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
-        Tuesday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
-        Wednesday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
-        Thursday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
-        Friday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] }
+        Monday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Tagessalat: [] },
+        Tuesday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Tagessalat: [] },
+        Wednesday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Tagessalat: [] },
+        Thursday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Tagessalat: [] },
+        Friday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Tagessalat: [] }
       };
 
       const ratingValues = {
@@ -228,34 +239,29 @@ app.get('/weekly-summary', (req, res) => {
         veryGood: 5
       };
 
-      const serviceRatingValues = {
-        bad: 1,
-        neutral: 2,
-        good: 3
-      };
-
       jsonObj.forEach(row => {
-        const date = new Date(row.date);
+        const [datePart, timePart] = row.date.split(' ');
+        const [day, month, year] = datePart.split('.').map(Number);
+        const [hours, minutes, seconds] = timePart.split(':').map(Number);
+        const date = new Date(year, month - 1, day, hours, minutes, seconds);
+
         if (date >= weekStart && date <= weekEnd) {
-          const day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
-          if (summary[day]) {
-            if (row.category === 'Service') {
-              summary[day][row.category].push(serviceRatingValues[row.rating]);
-            } else {
-              summary[day][row.category].push(ratingValues[row.rating]);
-            }
+          const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+          if (summary[dayName]) {
+            summary[dayName][row.category].push(ratingValues[row.rating]);
           }
         }
       });
 
-      // Calculate average ratings
+      // Calculate average ratings and count votes
       const averageSummary = {};
       Object.keys(summary).forEach(day => {
         averageSummary[day] = {};
         Object.keys(summary[day]).forEach(category => {
           const ratings = summary[day][category];
           const average = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2) : 'N/A';
-          averageSummary[day][category] = average;
+          const count = ratings.length;
+          averageSummary[day][category] = { average, count };
         });
       });
 
