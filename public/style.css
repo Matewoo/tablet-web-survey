@@ -20,7 +20,7 @@ body {
   h1 {
     font-size: 3rem;
     margin-bottom: 70px;
-    padding-top: 3rem;
+    padding-top: 1rem;
     -webkit-user-select: none; /* Safari */
     -moz-user-select: none;
     -ms-user-select: none;
@@ -41,7 +41,7 @@ body {
     grid-template-columns:auto 3fr;
     gap: 250px;
     align-items: flex-start;
-    margin-top:30px;
+    margin-top:20px;
     margin-left: 12rem;
     margin-right: 12rem;
     margin-bottom: -70px;
