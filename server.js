@@ -17,8 +17,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 
 // CSV Writer setup
+const csvFilePath = path.join(__dirname, '../tablet-web-survey-data/data.csv');
+const csvDir = path.dirname(csvFilePath);
+
+// Ensure the directory exists
+if (!fs.existsSync(csvDir)) {
+  fs.mkdirSync(csvDir, { recursive: true });
+}
+
+// Ensure the file exists
+if (!fs.existsSync(csvFilePath)) {
+  fs.writeFileSync(csvFilePath, 'DATE,CATEGORY,RATING\n');
+}
 const csvWriter = createCsvWriter({
-  path: 'survey_results.csv',
+  path: csvFilePath,
   header: [
     { id: 'date', title: 'DATE' },
     { id: 'category', title: 'CATEGORY' },
@@ -34,7 +46,7 @@ app.get('/', (req, res) => {
 
 // Handle form submission
 app.post('/submit', (req, res) => {
-  const date = new Date().toISOString().replace('T', ' ').split('.')[0]; // Aktuelles Datum und Uhrzeit
+  let date = new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' }).replace('"', '').replace(',', '');
   const results = req.body;
 
   // Ergebnisse in die CSV-Datei einfügen
@@ -70,7 +82,7 @@ app.get('/survey', (req, res) => {
       <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;700&display=swap" rel="stylesheet">
       <link rel="stylesheet" type="text/css" href="style.css">
     </head>
-    <body>
+    <body style="overflow-y: scroll;">
       <h1>Survey Results</h1>
       <div id="results"></div>
       <script>
@@ -95,7 +107,7 @@ app.get('/survey', (req, res) => {
 
 // Serve the survey results data
 app.get('/results', (req, res) => {
-  const csvFilePath = 'survey_results.csv';
+  const csvFilePath = path.join(__dirname, '../tablet-web-survey-data/data.csv');
   csv({
     noheader: true,
     headers: ['date', 'category', 'rating']
@@ -131,12 +143,12 @@ app.get('/summary', (req, res) => {
       <table id="summary-table">
         <thead>
           <tr>
-            <th>Category</th>
-            <th>Monday</th>
-            <th>Tuesday</th>
-            <th>Wednesday</th>
-            <th>Thursday</th>
-            <th>Friday</th>
+            <th>Gericht</th>
+            <th style="width: 18%;">Montag</th>
+            <th style="width: 18%;">Dienstg</th>
+            <th style="width: 18%;">Mittwoch</th>
+            <th style="width: 18%;">Donnerstag</th>
+            <th style="width: 18%;">Freitag</th>
           </tr>
         </thead>
         <tbody>
@@ -155,21 +167,21 @@ app.get('/summary', (req, res) => {
         }
 
         function fetchSummary() {
-          fetch(\`/weekly-summary?week=\${currentWeek.toISOString()}\`)
+          fetch(\`/weekly-summary?week=\${currentWeek.toISOString().split('T')[0]}\`)
             .then(response => response.json())
             .then(data => {
               const tableBody = document.getElementById('summary-table').getElementsByTagName('tbody')[0];
               tableBody.innerHTML = '';
-              const categories = ['Fleischgericht', 'Vegetarisch', 'Tagesgericht', 'Service'];
+              const categories = ['Fleischgericht', 'Vegetarisch', 'Tagesgericht', 'Tagessalat'];
               categories.forEach(category => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = \`
                   <td>\${category}</td>
-                  <td>\${data.Monday[category]}</td>
-                  <td>\${data.Tuesday[category]}</td>
-                  <td>\${data.Wednesday[category]}</td>
-                  <td>\${data.Thursday[category]}</td>
-                  <td>\${data.Friday[category]}</td>
+                  <td>\${data.Monday[category].average} ⭐    (\${data.Monday[category].count} P)</td>
+                  <td>\${data.Tuesday[category].average} ⭐    (\${data.Tuesday[category].count} P)</td>
+                  <td>\${data.Wednesday[category].average} ⭐    (\${data.Wednesday[category].count} P)</td>
+                  <td>\${data.Thursday[category].average} ⭐    (\${data.Thursday[category].count} P)</td>
+                  <td>\${data.Friday[category].average} ⭐    (\${data.Friday[category].count} P)</td>
                 \`;
                 tableBody.appendChild(tr);
               });
@@ -201,11 +213,22 @@ app.get('/summary', (req, res) => {
 
 // Serve the weekly summary data
 app.get('/weekly-summary', (req, res) => {
-  const weekStart = new Date(req.query.week);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 4); // Friday of the selected week
+  const week = req.query.week;
+  if (!week) {
+    return res.status(400).json({ status: 'error', message: 'Week query parameter is required! Example: domain.com/weekly-summary?week=2025-02-03' });
+  }
 
-  const csvFilePath = 'survey_results.csv';
+  const [year, month, day] = week.split('-').map(Number);
+  const weekStart = new Date(Date.UTC(year, month - 1, day));
+  if (isNaN(weekStart.getTime())) {
+    return res.status(400).json({ status: 'error', message: 'Invalid date format' });
+  }
+  
+  const weekEnd = new Date(weekStart);
+  weekEnd.setUTCDate(weekStart.getUTCDate() + 4); // Friday of the selected week
+  weekEnd.setUTCHours(23, 59, 59, 999); // End of Friday
+
+  const csvFilePath = path.join(__dirname, '../tablet-web-survey-data/data.csv');
   csv({
     noheader: true,
     headers: ['date', 'category', 'rating']
@@ -213,11 +236,11 @@ app.get('/weekly-summary', (req, res) => {
     .fromFile(csvFilePath)
     .then((jsonObj) => {
       const summary = {
-        Monday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
-        Tuesday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
-        Wednesday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
-        Thursday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] },
-        Friday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Service: [] }
+        Monday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Tagessalat: [] },
+        Tuesday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Tagessalat: [] },
+        Wednesday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Tagessalat: [] },
+        Thursday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Tagessalat: [] },
+        Friday: { Fleischgericht: [], Vegetarisch: [], Tagesgericht: [], Tagessalat: [] }
       };
 
       const ratingValues = {
@@ -228,34 +251,29 @@ app.get('/weekly-summary', (req, res) => {
         veryGood: 5
       };
 
-      const serviceRatingValues = {
-        bad: 1,
-        neutral: 2,
-        good: 3
-      };
+      jsonObj.slice(1).forEach(row => {
+        const [datePart, timePart] = row.date.split(' ');
+        const [day, month, year] = datePart.split('.').map(Number);
+        const [hours, minutes, seconds] = timePart.split(':').map(Number);
+        const date = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
 
-      jsonObj.forEach(row => {
-        const date = new Date(row.date);
         if (date >= weekStart && date <= weekEnd) {
-          const day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
-          if (summary[day]) {
-            if (row.category === 'Service') {
-              summary[day][row.category].push(serviceRatingValues[row.rating]);
-            } else {
-              summary[day][row.category].push(ratingValues[row.rating]);
-            }
+          const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getUTCDay()];
+          if (summary[dayName]) {
+            summary[dayName][row.category].push(ratingValues[row.rating]);
           }
         }
       });
 
-      // Calculate average ratings
+      // Calculate average ratings and count votes
       const averageSummary = {};
       Object.keys(summary).forEach(day => {
         averageSummary[day] = {};
         Object.keys(summary[day]).forEach(category => {
           const ratings = summary[day][category];
           const average = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2) : 'N/A';
-          averageSummary[day][category] = average;
+          const count = ratings.length;
+          averageSummary[day][category] = { average, count };
         });
       });
 

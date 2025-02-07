@@ -10,7 +10,7 @@
 </head>
 <body>
   <h1>Bitte bewerten Sie Ihren heutigen Besuch</h1>
-  <div class="content">
+  <div class="content" id="content">
     <div>
       <div class="rating-container" style="justify-content:left;">
         <h3>Fleisch/Fisch</h3>
@@ -21,8 +21,8 @@
       <div class="rating-container" style="justify-content:left;">
         <h3>Tagesgericht</h3>
       </div>
-      <div class="rating-container" style="justify-content:left; margin-top: 20px; margin-bottom: 20px;">
-        <h3>Service</h3>
+      <div class="rating-container" style="justify-content:left;">
+        <h3>Tagesalat</h3>
       </div>
     </div>
     <div>
@@ -53,11 +53,13 @@
           <button class="emoji" data-category="Tagesgericht" id="veryGood">😋</button>
         </div>
       </div>
-      <div class="rating-container" style="margin-top: 20px; margin-bottom: 20px;">
+      <div class="rating-container">
         <div class="emojies">
-          <button class="emoji" data-category="Service" id="bad">☹️</button>
-          <button class="emoji" data-category="Service" id="neutral">😐</button>
-          <button class="emoji" data-category="Service" id="good">🙂</button>
+          <button class="emoji" data-category="Tagessalat" id="veryBad">😟</button>
+          <button class="emoji" data-category="Tagessalat" id="bad">☹️</button>
+          <button class="emoji" data-category="Tagessalat" id="neutral">😐</button>
+          <button class="emoji" data-category="Tagessalat" id="good">🙂</button>
+          <button class="emoji" data-category="Tagessalat" id="veryGood">😋</button>
         </div>
       </div>
     </div>
@@ -66,13 +68,12 @@
     <div style="width: 20rem;">
     </div>
     <div style="width: 20rem;">
-      <button id="submit" style="margin-top: 0;">Abschicken</button>
     </div>
     <div style="width: 20rem;">
       <img src="/resources/logo.png" alt="Logo" class="logo" height="100" style="margin-top: 40px;"> 
     </div>
   </div>
-  <div id="thank-you-message" style="display: none; margin-top: 20px; font-size: 2rem;">Vielen Dank für Ihr Feedback!</div>
+  <div id="thank-you-message" style="display: none; margin-top: -420px; font-size: 5rem;">Vielen Dank für Ihr Feedback!</div>
   <script src="script.js"></script>
 </body>
 </html>
