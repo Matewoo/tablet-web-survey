@@ -185,6 +185,18 @@ app.get('/summary', (req, res) => {
                 \`;
                 tableBody.appendChild(tr);
               });
+
+              const tro = document.createElement('tr');
+              tro.innerHTML = \`
+                <td>Gesamte Bewertungen</td>
+                <td>\${Number(data.Monday['Fleischgericht'].count) + Number(data.Monday['Vegetarisch'].count) + Number(data.Monday['Tagesgericht'].count) + Number(data.Monday['Tagessalat'].count)} Bewertungen</td>
+                <td>\${Number(data.Tuesday['Fleischgericht'].count) + Number(data.Tuesday['Vegetarisch'].count) + Number(data.Tuesday['Tagesgericht'].count) + Number(data.Tuesday['Tagessalat'].count)} Bewertungen</td>
+                <td>\${Number(data.Wednesday['Fleischgericht'].count) + Number(data.Wednesday['Vegetarisch'].count) + Number(data.Wednesday['Tagesgericht'].count) + Number(data.Wednesday['Tagessalat'].count)} Bewertungen</td>
+                <td>\${Number(data.Thursday['Fleischgericht'].count) + Number(data.Thursday['Vegetarisch'].count) + Number(data.Thursday['Tagesgericht'].count) + Number(data.Thursday['Tagessalat'].count)} Bewertungen</td>
+                <td>\${Number(data.Friday['Fleischgericht'].count) + Number(data.Friday['Vegetarisch'].count) + Number(data.Friday['Tagesgericht'].count) + Number(data.Friday['Tagessalat'].count)} Bewertungen</td>
+              \`;
+              tableBody.appendChild(tro);
+              
             })
             .catch(error => {
               console.error('Error fetching summary:', error);
