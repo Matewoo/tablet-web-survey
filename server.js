@@ -145,7 +145,7 @@ app.get('/summary', (req, res) => {
           <tr>
             <th>Gericht</th>
             <th style="width: 18%;">Montag</th>
-            <th style="width: 18%;">Dienstg</th>
+            <th style="width: 18%;">Dienstag</th>
             <th style="width: 18%;">Mittwoch</th>
             <th style="width: 18%;">Donnerstag</th>
             <th style="width: 18%;">Freitag</th>
