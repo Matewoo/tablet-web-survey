@@ -41,7 +41,7 @@ const csvWriter = createCsvWriter({
 
 // Serve the client-side HTML
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'vote.html'));
+  res.sendFile(path.join(__dirname, '../frontend/public', 'vote.html'));
 });
 
 // Handle form submission
