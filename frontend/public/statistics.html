@@ -17,25 +17,47 @@
         <div class="value-wrapper">
             <h2>Anzahl aller Bewertungen</h2>
             <p class="feedbackValue feedbackValue-countAllEver">0</p>
-            <script src="countAllEver.js"></script>
+            <script src="src/countAllEver.js"></script>
         </div>
 
-        <div class="chart-wrapper">
+        <div class="value-wrapper">
             <h2>Anzahl Bewertungen letzter Woche</h2>
-            <canvas id="feedbackChart-totalCategoryCounts3" width="450" height="250"></canvas>
-            <script></script>
+            <p class="feedbackValue feedbackValue-countAllLastWeek"></p>
+            <script src="src/countAllLastWeek.js"></script>
         </div>
 
-        <div class="chart-wrapper">
-            <h2>Anzahl Bewertungen letzten Monat</h2>
-            <canvas id="feedbackChart-totalCategoryCounts4" width="450" height="250"></canvas>
-            <script src=""></script>
+        <div class="m2x2-wrapper">
+            <div class="m2x2-grid">
+                <div class="m2x2-element">
+                    <h3>Fleisch / Fisch heute</h3>
+                    <p class="mini-value" id="todaysAverageMeatFish"></p>
+                </div>
+                <div class="m2x2-element">
+                    <h3>Vegetarisch heute</h3>
+                    <p class="mini-value" id="todaysAverageVeggi"></p>
+                </div>
+                <div class="m2x2-element">
+                    <h3>Tagesgesempfehlung heute</h3>
+                    <p class="mini-value" id="todaysAverageDailyDish"></p>
+                </div>
+                <div class="m2x2-element">
+                    <h3>Tagessalat heute</h3>
+                    <p class="mini-value" id="todaysAverageDailySalad"></p>
+                </div>
+            </div>
+            <script src="src/todaysAverage.js"></script>
         </div>
 
         <div class="chart-wrapper">
             <h2>Verteilung aller Bewertungen (N / %)</h2>
-            <canvas id="feedbackChart-distributionOfAllRatings" width="450" height="250"></canvas>
-            <script src="distributionOfAllRatings.js"></script>
+            <canvas id="feedbackChart-distributionOfAllRatings" width="450" height="200"></canvas>
+            <script src="src/distributionOfAllRatings.js"></script>
+        </div>
+
+        <div class="chart-wrapper-double">
+            <h2>Wöchentliche Durchschnitte</h2>
+            <canvas id="weeklyAverageChart" width="420" height="150" style="margin-top:-50px;"></canvas>
+            <script src="src/weeklyAverage.js"></script>
         </div>
 
         <div class="chart-wrapper">
@@ -46,26 +68,20 @@
 
         <div class="chart-wrapper">
             <h2>Vert. Bewertungen letzten Monat (N / %)</h2>
-            <canvas id="feedbackChart-totalCategoryCounts6" width="450" height="250"></canvas>
-            <script src="totalCategoryCounts.js"></script>
+            <canvas id="feedbackChart-pie" width="450" height="250"></canvas>
+            <script src="src/pie.js"></script>
         </div>
 
         <div class="chart-wrapper">
             <h2>Alle Bewertungen</h2>
-            <canvas id="feedbackChart-totalCategoryCounts7" width="450" height="250"></canvas>
-            <script src="totalCategoryCounts.js"></script>
+            <canvas id="feedbackChart-line" width="450" height="250"></canvas>
+            <script src="src/line.js"></script>
         </div>
 
         <div class="chart-wrapper">
             <h2>Alle Bewertungen</h2>
-            <canvas id="feedbackChart-totalCategoryCounts8" width="450" height="250"></canvas>
-            <script src="totalCategoryCounts.js"></script>
-        </div>
-
-        <div class="chart-wrapper">
-            <h2>Alle Bewertungen</h2>
-            <canvas id="feedbackChart-totalCategoryCounts8" width="450" height="250"></canvas>
-            <script src="totalCategoryCounts.js"></script>
+            <canvas id="feedbackChart-radar" width="450" height="250"></canvas>
+            <script src="src/radar.js"></script>
         </div>
 
     </div>

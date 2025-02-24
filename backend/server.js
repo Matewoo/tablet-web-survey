@@ -45,7 +45,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/statistics', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'statistics.html'));
+  res.sendFile(path.join(__dirname, '../frontend/public', 'statistics.html'));
 });
 
 // Handle form submission

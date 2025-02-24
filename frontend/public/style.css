@@ -121,12 +121,19 @@ th {
 }
 
 .chart-wrapper {
-  padding: 0px 20px 20px 20px;
-  background: rgb(224, 224, 224);
+  background: rgb(190, 190, 190);
   border-radius: 20px;
   color: black;
-  flex: 1 1 450px; /* Flex-grow, flex-shrink, flex-basis */
-  max-width: 450px;
+  width: 450px;
+  height: 350px;
+}
+
+.chart-wrapper-double {
+  background: rgb(190, 190, 190);
+  border-radius: 20px;
+  color: black;
+  width: 920px;
+  height: 350px;
 }
 
 .value-wrapper {
@@ -134,25 +141,59 @@ display: flex;
 flex-direction: column;
 align-items: center;
 justify-content: center;
-padding: 20px;
-background: rgb(224, 224, 224);
+background: rgb(190, 190, 190);
 border-radius: 20px;
 color: black;
-flex: 1 1 450px; /* Flex-grow, flex-shrink, flex-basis */
-max-width: 450px;
+width: 450px;
+height: 350px;
 text-align: center;
 position: relative;
 }
 
 .value-wrapper h2 {
-position: absolute;
-top: 20px;
-left: 105px;
+position: relative;
+top: 60px;
 margin: 0;
 }
 
+.m2x2-wrapper {
+  border-radius: 20px;
+  color: black;
+  width: 450px;  /* Feste Breite */
+  height: 350px; /* Feste Höhe */
+}
+
 .feedbackValue {
-font-size: 6rem;
+font-size: 8rem;
 font-weight: bold;
-margin-top: 100px; /* Abstand zur Überschrift */
+margin-top: 125px; /* Abstand zur Überschrift */ 
+}
+
+.m2x2-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 20px;
+  height: 100%;
+}
+
+.m2x2-element {
+  background: rgb(190, 190, 190);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.m2x2-element h3 {
+  margin: 0;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.mini-value {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
 }
