@@ -107,3 +107,47 @@ body {
     background-color: #4CAF50;
     color: white;
   }
+
+  .charts-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.chart-wrapper {
+    padding: 0px 20px 20px 20px;
+    background: rgb(224, 224, 224);
+    border-radius: 20px;
+    color: black;
+    flex: 1 1 450px; /* Flex-grow, flex-shrink, flex-basis */
+    max-width: 450px;
+}
+
+.value-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgb(224, 224, 224);
+  border-radius: 20px;
+  color: black;
+  flex: 1 1 450px; /* Flex-grow, flex-shrink, flex-basis */
+  max-width: 450px;
+  text-align: center;
+  position: relative;
+}
+
+.value-wrapper h2 {
+  position: absolute;
+  top: 20px;
+  left: 105px;
+  margin: 0;
+}
+
+.feedbackValue {
+  font-size: 6rem;
+  font-weight: bold;
+  margin-top: 100px; /* Abstand zur Überschrift */
+}

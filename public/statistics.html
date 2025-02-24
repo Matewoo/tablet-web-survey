@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Statistics</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body style="overflow: visible;">
+    <h1>Feedback Statistics</h1>
+
+    <div class="charts-container">
+
+        <div class="value-wrapper">
+            <h2>Anzahl aller Bewertungen</h2>
+            <p class="feedbackValue feedbackValue-countAllEver">0</p>
+            <script src="countAllEver.js"></script>
+        </div>
+
+        <div class="chart-wrapper">
+            <h2>Anzahl Bewertungen letzter Woche</h2>
+            <canvas id="feedbackChart-totalCategoryCounts3" width="450" height="250"></canvas>
+            <script></script>
+        </div>
+
+        <div class="chart-wrapper">
+            <h2>Anzahl Bewertungen letzten Monat</h2>
+            <canvas id="feedbackChart-totalCategoryCounts4" width="450" height="250"></canvas>
+            <script src=""></script>
+        </div>
+
+        <div class="chart-wrapper">
+            <h2>Verteilung aller Bewertungen (N / %)</h2>
+            <canvas id="feedbackChart-distributionOfAllRatings" width="450" height="250"></canvas>
+            <script src="distributionOfAllRatings.js"></script>
+        </div>
+
+        <div class="chart-wrapper">
+            <h2>Vert. Bewertungen letzter Woche (N / %)</h2>
+            <canvas id="feedbackChart-totalCategoryCounts5" width="450" height="250"></canvas>
+            <script src=""></script>
+        </div>
+
+        <div class="chart-wrapper">
+            <h2>Vert. Bewertungen letzten Monat (N / %)</h2>
+            <canvas id="feedbackChart-totalCategoryCounts6" width="450" height="250"></canvas>
+            <script src="totalCategoryCounts.js"></script>
+        </div>
+
+        <div class="chart-wrapper">
+            <h2>Alle Bewertungen</h2>
+            <canvas id="feedbackChart-totalCategoryCounts7" width="450" height="250"></canvas>
+            <script src="totalCategoryCounts.js"></script>
+        </div>
+
+        <div class="chart-wrapper">
+            <h2>Alle Bewertungen</h2>
+            <canvas id="feedbackChart-totalCategoryCounts8" width="450" height="250"></canvas>
+            <script src="totalCategoryCounts.js"></script>
+        </div>
+
+        <div class="chart-wrapper">
+            <h2>Alle Bewertungen</h2>
+            <canvas id="feedbackChart-totalCategoryCounts8" width="450" height="250"></canvas>
+            <script src="totalCategoryCounts.js"></script>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

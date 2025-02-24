@@ -44,6 +44,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/statistics', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'statistics.html'));
+});
+
 // Handle form submission
 app.post('/submit', (req, res) => {
   let date = new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' }).replace('"', '').replace(',', '');
