@@ -21,22 +21,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('todaysAverageMeatFish').textContent = 
                     data[currentDay]['Fleischgericht'].average !== 'N/A' 
                         ? `${data[currentDay]['Fleischgericht'].average} ⭐` 
-                        : 'Keine Daten';
+                        : '- ⭐';
 
                 document.getElementById('todaysAverageVeggi').textContent = 
                     data[currentDay]['Vegetarisch'].average !== 'N/A' 
                         ? `${data[currentDay]['Vegetarisch'].average} ⭐` 
-                        : 'Keine Daten';
+                        : '- ⭐';
 
                 document.getElementById('todaysAverageDailyDish').textContent = 
                     data[currentDay]['Tagesgericht'].average !== 'N/A' 
                         ? `${data[currentDay]['Tagesgericht'].average} ⭐` 
-                        : 'Keine Daten';
+                        : '- ⭐';
 
                 document.getElementById('todaysAverageDailySalad').textContent = 
                     data[currentDay]['Tagessalat'].average !== 'N/A' 
                         ? `${data[currentDay]['Tagessalat'].average} ⭐` 
-                        : 'Keine Daten';
+                        : '- ⭐';
             } else {
                 // If it's weekend or no data available
                 const elements = [
