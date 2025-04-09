@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'todaysAverageDailySalad'
                 ];
                 elements.forEach(id => {
-                    document.getElementById(id).textContent = 'Keine Daten';
+                    document.getElementById(id).textContent = '- ⭐';
                 });
             }
         })
